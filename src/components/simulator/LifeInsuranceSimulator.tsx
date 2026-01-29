@@ -8,6 +8,7 @@ import SimulatorDateInput from "./SimulatorDateInput";
 import SimulatorSelect from "./SimulatorSelect";
 import AllocationTable from "./AllocationTable";
 import FraisTable from "./FraisTable";
+import EpargneConstitueeModal from "./EpargneConstitueeModal";
 
 const LifeInsuranceSimulator = () => {
   const [isExpertMode, setIsExpertMode] = useState(true);
@@ -39,6 +40,11 @@ const LifeInsuranceSimulator = () => {
 
   // Frais de souscription
   const [fraisSouscriptionFondsEuros, setFraisSouscriptionFondsEuros] = useState("0");
+
+  // Mode simplifié - TMI et épargne constituée
+  const [tmi, setTmi] = useState("30");
+  const [versements, setVersements] = useState("100 000");
+  const [interets, setInterets] = useState("50 000");
   const [fraisSouscriptionUc, setFraisSouscriptionUc] = useState("0");
 
   const handleReset = () => {
@@ -59,6 +65,9 @@ const LifeInsuranceSimulator = () => {
     setFraisGestionUc("0");
     setFraisSouscriptionFondsEuros("0");
     setFraisSouscriptionUc("0");
+    setTmi("30");
+    setVersements("100 000");
+    setInterets("50 000");
   };
 
   const handleCalculate = () => {
@@ -140,49 +149,89 @@ const LifeInsuranceSimulator = () => {
           </div>
         </section>
 
-        {/* Situation du contrat */}
-        <section>
-          <SectionTitle>Situation du contrat au 01/01/2021</SectionTitle>
-          <div className="space-y-1">
-            <SimulatorDateInput
-              label="Date de dernière situation"
-              value={dateDerniereSituation}
-              onChange={setDateDerniereSituation}
-            />
-            <SimulatorInput
-              label="Total des primes versées"
-              value={totalPrimesVersees}
-              onChange={setTotalPrimesVersees}
-              unit="€"
-              required
-              info
-            />
-            <SimulatorInput
-              label="Total des montants rachetés"
-              value={totalMontantsRachetes}
-              onChange={setTotalMontantsRachetes}
-              unit="€"
-              info
-            />
-            <SimulatorInput
-              label="Valeur de rachat"
-              value={valeurRachat}
-              onChange={setValeurRachat}
-              unit="€"
-            />
-          </div>
+        {/* Situation du contrat - Expert mode */}
+        {isExpertMode && (
+          <section>
+            <SectionTitle>Situation du contrat au 01/01/2021</SectionTitle>
+            <div className="space-y-1">
+              <SimulatorDateInput
+                label="Date de dernière situation"
+                value={dateDerniereSituation}
+                onChange={setDateDerniereSituation}
+              />
+              <SimulatorInput
+                label="Total des primes versées"
+                value={totalPrimesVersees}
+                onChange={setTotalPrimesVersees}
+                unit="€"
+                required
+                info
+              />
+              <SimulatorInput
+                label="Total des montants rachetés"
+                value={totalMontantsRachetes}
+                onChange={setTotalMontantsRachetes}
+                unit="€"
+                info
+              />
+              <SimulatorInput
+                label="Valeur de rachat"
+                value={valeurRachat}
+                onChange={setValeurRachat}
+                unit="€"
+              />
+            </div>
 
-          <div className="mt-4">
-            <AllocationTable
-              fondsEuros={allocationFondsEuros}
-              ucHorsImmobilier={allocationUcHorsImmobilier}
-              ucImmobilier={allocationUcImmobilier}
-              onFondsEurosChange={setAllocationFondsEuros}
-              onUcHorsImmobilierChange={setAllocationUcHorsImmobilier}
-              onUcImmobilierChange={setAllocationUcImmobilier}
-            />
-          </div>
-        </section>
+            <div className="mt-4">
+              <AllocationTable
+                fondsEuros={allocationFondsEuros}
+                ucHorsImmobilier={allocationUcHorsImmobilier}
+                ucImmobilier={allocationUcImmobilier}
+                onFondsEurosChange={setAllocationFondsEuros}
+                onUcHorsImmobilierChange={setAllocationUcHorsImmobilier}
+                onUcImmobilierChange={setAllocationUcImmobilier}
+              />
+            </div>
+          </section>
+        )}
+
+        {/* Mode simplifié - TMI et Épargne constituée */}
+        {!isExpertMode && (
+          <section>
+            <SectionTitle>Situation fiscale et épargne</SectionTitle>
+            <div className="space-y-1">
+              <SimulatorSelect
+                label="TMI"
+                value={tmi}
+                onChange={setTmi}
+                options={[
+                  { value: "0", label: "0%" },
+                  { value: "11", label: "11%" },
+                  { value: "30", label: "30%" },
+                  { value: "41", label: "41%" },
+                  { value: "45", label: "45%" },
+                ]}
+              />
+              <EpargneConstitueeModal
+                versements={versements}
+                interets={interets}
+                onVersementsChange={setVersements}
+                onInteretsChange={setInterets}
+              />
+            </div>
+
+            <div className="mt-4">
+              <AllocationTable
+                fondsEuros={allocationFondsEuros}
+                ucHorsImmobilier={allocationUcHorsImmobilier}
+                ucImmobilier={allocationUcImmobilier}
+                onFondsEurosChange={setAllocationFondsEuros}
+                onUcHorsImmobilierChange={setAllocationUcHorsImmobilier}
+                onUcImmobilierChange={setAllocationUcImmobilier}
+              />
+            </div>
+          </section>
+        )}
 
         {/* Taux de capitalisation annuel */}
         <section>
