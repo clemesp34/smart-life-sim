@@ -43,10 +43,28 @@ const LifeInsuranceSimulator = () => {
 
   // Mode simplifié - TMI, épargne constituée et rendement
   const [tmi, setTmi] = useState("30");
-  const [versements, setVersements] = useState("100 000");
-  const [interets, setInterets] = useState("50 000");
+  const [versementsAvant, setVersementsAvant] = useState("50 000");
+  const [versementsApres, setVersementsApres] = useState("50 000");
+  const [interetsAvant, setInteretsAvant] = useState("25 000");
+  const [interetsApres, setInteretsApres] = useState("25 000");
   const [rendementAnnuel, setRendementAnnuel] = useState("5");
   const [fraisSouscriptionUc, setFraisSouscriptionUc] = useState("0");
+
+  // Calcul du total épargne constituée
+  const parseNumber = (value: string) => {
+    return parseFloat(value.replace(/\s/g, "").replace(",", ".")) || 0;
+  };
+
+  const formatNumber = (num: number) => {
+    return num.toLocaleString("fr-FR");
+  };
+
+  const totalEpargne = formatNumber(
+    parseNumber(versementsAvant) +
+    parseNumber(versementsApres) +
+    parseNumber(interetsAvant) +
+    parseNumber(interetsApres)
+  );
 
   const handleReset = () => {
     setDureeSimulation("15");
@@ -67,8 +85,10 @@ const LifeInsuranceSimulator = () => {
     setFraisSouscriptionFondsEuros("0");
     setFraisSouscriptionUc("0");
     setTmi("30");
-    setVersements("100 000");
-    setInterets("50 000");
+    setVersementsAvant("50 000");
+    setVersementsApres("50 000");
+    setInteretsAvant("25 000");
+    setInteretsApres("25 000");
     setRendementAnnuel("5");
   };
 
@@ -215,10 +235,15 @@ const LifeInsuranceSimulator = () => {
                 ]}
               />
               <EpargneConstitueeModal
-                versements={versements}
-                interets={interets}
-                onVersementsChange={setVersements}
-                onInteretsChange={setInterets}
+                versementsAvant={versementsAvant}
+                versementsApres={versementsApres}
+                interetsAvant={interetsAvant}
+                interetsApres={interetsApres}
+                onVersementsAvantChange={setVersementsAvant}
+                onVersementsApresChange={setVersementsApres}
+                onInteretsAvantChange={setInteretsAvant}
+                onInteretsApresChange={setInteretsApres}
+                totalEpargne={totalEpargne}
               />
               <SimulatorInput
                 label="Rendement annuel"
