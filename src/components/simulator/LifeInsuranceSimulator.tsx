@@ -41,10 +41,11 @@ const LifeInsuranceSimulator = () => {
   // Frais de souscription
   const [fraisSouscriptionFondsEuros, setFraisSouscriptionFondsEuros] = useState("0");
 
-  // Mode simplifié - TMI et épargne constituée
+  // Mode simplifié - TMI, épargne constituée et rendement
   const [tmi, setTmi] = useState("30");
   const [versements, setVersements] = useState("100 000");
   const [interets, setInterets] = useState("50 000");
+  const [rendementAnnuel, setRendementAnnuel] = useState("5");
   const [fraisSouscriptionUc, setFraisSouscriptionUc] = useState("0");
 
   const handleReset = () => {
@@ -68,6 +69,7 @@ const LifeInsuranceSimulator = () => {
     setTmi("30");
     setVersements("100 000");
     setInterets("50 000");
+    setRendementAnnuel("5");
   };
 
   const handleCalculate = () => {
@@ -218,33 +220,30 @@ const LifeInsuranceSimulator = () => {
                 onVersementsChange={setVersements}
                 onInteretsChange={setInterets}
               />
-            </div>
-
-            <div className="mt-4">
-              <AllocationTable
-                fondsEuros={allocationFondsEuros}
-                ucHorsImmobilier={allocationUcHorsImmobilier}
-                ucImmobilier={allocationUcImmobilier}
-                onFondsEurosChange={setAllocationFondsEuros}
-                onUcHorsImmobilierChange={setAllocationUcHorsImmobilier}
-                onUcImmobilierChange={setAllocationUcImmobilier}
+              <SimulatorInput
+                label="Rendement annuel"
+                value={rendementAnnuel}
+                onChange={setRendementAnnuel}
+                unit="%"
               />
             </div>
           </section>
         )}
 
-        {/* Taux de capitalisation annuel */}
-        <section>
-          <SectionTitle>Taux de capitalisation annuel</SectionTitle>
-          <AllocationTable
-            fondsEuros={tauxFondsEuros}
-            ucHorsImmobilier={tauxUcHorsImmobilier}
-            ucImmobilier={tauxUcImmobilier}
-            onFondsEurosChange={setTauxFondsEuros}
-            onUcHorsImmobilierChange={setTauxUcHorsImmobilier}
-            onUcImmobilierChange={setTauxUcImmobilier}
-          />
-        </section>
+        {/* Taux de capitalisation annuel - Expert mode only */}
+        {isExpertMode && (
+          <section>
+            <SectionTitle>Taux de capitalisation annuel</SectionTitle>
+            <AllocationTable
+              fondsEuros={tauxFondsEuros}
+              ucHorsImmobilier={tauxUcHorsImmobilier}
+              ucImmobilier={tauxUcImmobilier}
+              onFondsEurosChange={setTauxFondsEuros}
+              onUcHorsImmobilierChange={setTauxUcHorsImmobilier}
+              onUcImmobilierChange={setTauxUcImmobilier}
+            />
+          </section>
+        )}
 
         {/* Frais de gestion - Expert mode only */}
         {isExpertMode && (
