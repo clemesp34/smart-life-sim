@@ -7,7 +7,7 @@ import SimulatorInput from "./SimulatorInput";
 import SimulatorDateInput from "./SimulatorDateInput";
 import SimulatorSelect from "./SimulatorSelect";
 import AllocationTable from "./AllocationTable";
-import FraisTable from "./FraisTable";
+import FraisContratModal from "./FraisContratModal";
 import EpargneConstitueeModal from "./EpargneConstitueeModal";
 
 const LifeInsuranceSimulator = () => {
@@ -323,28 +323,18 @@ const LifeInsuranceSimulator = () => {
           </section>
         )}
 
-        {/* Frais de gestion - Expert mode only */}
+        {/* Frais du contrat - Expert mode only */}
         {isExpertMode && (
           <section>
-            <SectionTitle>Frais de gestion</SectionTitle>
-            <FraisTable
-              fondsEuros={fraisGestionFondsEuros}
-              uc={fraisGestionUc}
-              onFondsEurosChange={setFraisGestionFondsEuros}
-              onUcChange={setFraisGestionUc}
-            />
-          </section>
-        )}
-
-        {/* Frais de souscription - Expert mode only */}
-        {isExpertMode && (
-          <section>
-            <SectionTitle>Frais de souscription</SectionTitle>
-            <FraisTable
-              fondsEuros={fraisSouscriptionFondsEuros}
-              uc={fraisSouscriptionUc}
-              onFondsEurosChange={setFraisSouscriptionFondsEuros}
-              onUcChange={setFraisSouscriptionUc}
+            <FraisContratModal
+              fraisGestionFondsEuros={fraisGestionFondsEuros}
+              fraisGestionUc={fraisGestionUc}
+              fraisSouscriptionFondsEuros={fraisSouscriptionFondsEuros}
+              fraisSouscriptionUc={fraisSouscriptionUc}
+              onFraisGestionFondsEurosChange={setFraisGestionFondsEuros}
+              onFraisGestionUcChange={setFraisGestionUc}
+              onFraisSouscriptionFondsEurosChange={setFraisSouscriptionFondsEuros}
+              onFraisSouscriptionUcChange={setFraisSouscriptionUc}
             />
           </section>
         )}
