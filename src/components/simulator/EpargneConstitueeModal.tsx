@@ -20,6 +20,7 @@ interface EpargneConstitueeModalProps {
   onInteretsAvantChange: (value: string) => void;
   onInteretsApresChange: (value: string) => void;
   totalEpargne: string;
+  showAvantSept17?: boolean;
 }
 
 const EpargneConstitueeModal = ({
@@ -32,6 +33,7 @@ const EpargneConstitueeModal = ({
   onInteretsAvantChange,
   onInteretsApresChange,
   totalEpargne,
+  showAvantSept17 = true,
 }: EpargneConstitueeModalProps) => {
   const [open, setOpen] = useState(false);
 
@@ -62,9 +64,11 @@ const EpargneConstitueeModal = ({
             <thead>
               <tr>
                 <th className="text-left text-sm font-medium text-muted-foreground p-2"></th>
-                <th className="text-center text-sm font-medium text-muted-foreground p-2">
-                  Av. sept 17
-                </th>
+                {showAvantSept17 && (
+                  <th className="text-center text-sm font-medium text-muted-foreground p-2">
+                    Av. sept 17
+                  </th>
+                )}
                 <th className="text-center text-sm font-medium text-muted-foreground p-2">
                   Ap. sept 17
                 </th>
@@ -73,18 +77,20 @@ const EpargneConstitueeModal = ({
             <tbody>
               <tr>
                 <td className="text-sm text-muted-foreground p-2">Versements</td>
-                <td className="p-1">
-                  <div className="relative">
-                    <Input
-                      value={versementsAvant}
-                      onChange={(e) => onVersementsAvantChange(e.target.value)}
-                      className="text-right pr-6 h-9"
-                    />
-                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                      €
-                    </span>
-                  </div>
-                </td>
+                {showAvantSept17 && (
+                  <td className="p-1">
+                    <div className="relative">
+                      <Input
+                        value={versementsAvant}
+                        onChange={(e) => onVersementsAvantChange(e.target.value)}
+                        className="text-right pr-6 h-9"
+                      />
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                        €
+                      </span>
+                    </div>
+                  </td>
+                )}
                 <td className="p-1">
                   <div className="relative">
                     <Input
@@ -100,18 +106,20 @@ const EpargneConstitueeModal = ({
               </tr>
               <tr>
                 <td className="text-sm text-muted-foreground p-2">Intérêts</td>
-                <td className="p-1">
-                  <div className="relative">
-                    <Input
-                      value={interetsAvant}
-                      onChange={(e) => onInteretsAvantChange(e.target.value)}
-                      className="text-right pr-6 h-9"
-                    />
-                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                      €
-                    </span>
-                  </div>
-                </td>
+                {showAvantSept17 && (
+                  <td className="p-1">
+                    <div className="relative">
+                      <Input
+                        value={interetsAvant}
+                        onChange={(e) => onInteretsAvantChange(e.target.value)}
+                        className="text-right pr-6 h-9"
+                      />
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                        €
+                      </span>
+                    </div>
+                  </td>
+                )}
                 <td className="p-1">
                   <div className="relative">
                     <Input
