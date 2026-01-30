@@ -41,14 +41,18 @@ const LifeInsuranceSimulator = () => {
   // Frais de souscription
   const [fraisSouscriptionFondsEuros, setFraisSouscriptionFondsEuros] = useState("0");
 
-  // Mode simplifié - TMI, épargne constituée et rendement
+  // Mode simplifié - Revenus, TMI et épargne constituée
+  const [revenuImposable, setRevenuImposable] = useState("60 000");
+  const [nombreParts, setNombreParts] = useState("2");
   const [tmi, setTmi] = useState("30");
   const [versementsAvant, setVersementsAvant] = useState("50 000");
   const [versementsApres, setVersementsApres] = useState("50 000");
   const [interetsAvant, setInteretsAvant] = useState("25 000");
   const [interetsApres, setInteretsApres] = useState("25 000");
-  const [rendementAnnuel, setRendementAnnuel] = useState("5");
   const [fraisSouscriptionUc, setFraisSouscriptionUc] = useState("0");
+
+  // Rachat
+  const [montantRachete, setMontantRachete] = useState("0");
 
   // Calcul du total épargne constituée
   const parseNumber = (value: string) => {
@@ -59,12 +63,25 @@ const LifeInsuranceSimulator = () => {
     return num.toLocaleString("fr-FR");
   };
 
+  // Vérifier si la date d'ouverture est avant le 29 sept 2017
+  const isContractBeforeSept2017 = () => {
+    const parts = dateOuverture.split("/");
+    if (parts.length !== 3) return false;
+    const date = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+    const sept2017 = new Date(2017, 8, 29); // 29 septembre 2017
+    return date < sept2017;
+  };
+
   const totalEpargne = formatNumber(
     parseNumber(versementsAvant) +
     parseNumber(versementsApres) +
     parseNumber(interetsAvant) +
     parseNumber(interetsApres)
   );
+
+  const handleRachatTotal = () => {
+    setMontantRachete(totalEpargne);
+  };
 
   const handleReset = () => {
     setDureeSimulation("15");
@@ -84,12 +101,14 @@ const LifeInsuranceSimulator = () => {
     setFraisGestionUc("0");
     setFraisSouscriptionFondsEuros("0");
     setFraisSouscriptionUc("0");
+    setRevenuImposable("60 000");
+    setNombreParts("2");
     setTmi("30");
     setVersementsAvant("50 000");
     setVersementsApres("50 000");
     setInteretsAvant("25 000");
     setInteretsApres("25 000");
-    setRendementAnnuel("5");
+    setMontantRachete("0");
   };
 
   const handleCalculate = () => {
@@ -217,42 +236,76 @@ const LifeInsuranceSimulator = () => {
           </section>
         )}
 
-        {/* Mode simplifié - TMI et Épargne constituée */}
+        {/* Mode simplifié - Situation fiscale et épargne */}
         {!isExpertMode && (
-          <section>
-            <SectionTitle>Situation fiscale et épargne</SectionTitle>
-            <div className="space-y-1">
-              <SimulatorSelect
-                label="TMI"
-                value={tmi}
-                onChange={setTmi}
-                options={[
-                  { value: "0", label: "0%" },
-                  { value: "11", label: "11%" },
-                  { value: "30", label: "30%" },
-                  { value: "41", label: "41%" },
-                  { value: "45", label: "45%" },
-                ]}
-              />
-              <EpargneConstitueeModal
-                versementsAvant={versementsAvant}
-                versementsApres={versementsApres}
-                interetsAvant={interetsAvant}
-                interetsApres={interetsApres}
-                onVersementsAvantChange={setVersementsAvant}
-                onVersementsApresChange={setVersementsApres}
-                onInteretsAvantChange={setInteretsAvant}
-                onInteretsApresChange={setInteretsApres}
-                totalEpargne={totalEpargne}
-              />
-              <SimulatorInput
-                label="Rendement annuel"
-                value={rendementAnnuel}
-                onChange={setRendementAnnuel}
-                unit="%"
-              />
-            </div>
-          </section>
+          <>
+            <section>
+              <SectionTitle>Situation fiscale et épargne</SectionTitle>
+              <div className="space-y-1">
+                <SimulatorInput
+                  label="Revenu imposable"
+                  value={revenuImposable}
+                  onChange={setRevenuImposable}
+                  unit="€"
+                />
+                <SimulatorInput
+                  label="Nombre de part(s) fiscale(s)"
+                  value={nombreParts}
+                  onChange={setNombreParts}
+                />
+                <SimulatorSelect
+                  label="TMI"
+                  value={tmi}
+                  onChange={setTmi}
+                  options={[
+                    { value: "0", label: "0%" },
+                    { value: "11", label: "11%" },
+                    { value: "30", label: "30%" },
+                    { value: "41", label: "41%" },
+                    { value: "45", label: "45%" },
+                  ]}
+                />
+                <EpargneConstitueeModal
+                  versementsAvant={versementsAvant}
+                  versementsApres={versementsApres}
+                  interetsAvant={interetsAvant}
+                  interetsApres={interetsApres}
+                  onVersementsAvantChange={setVersementsAvant}
+                  onVersementsApresChange={setVersementsApres}
+                  onInteretsAvantChange={setInteretsAvant}
+                  onInteretsApresChange={setInteretsApres}
+                  totalEpargne={totalEpargne}
+                  showAvantSept17={!isContractBeforeSept2017()}
+                />
+              </div>
+            </section>
+
+            <section>
+              <SectionTitle>Rachat</SectionTitle>
+              <div className="flex items-center justify-between py-2">
+                <label className="text-sm text-muted-foreground">Montant racheté</label>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="text"
+                      value={montantRachete}
+                      onChange={(e) => setMontantRachete(e.target.value)}
+                      className="simulator-input w-28 text-right h-8 px-2 flex rounded-md border border-input bg-background text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:text-sm"
+                    />
+                    <span className="text-sm text-muted-foreground min-w-8">€</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRachatTotal}
+                    className="text-xs h-8"
+                  >
+                    Rachat total
+                  </Button>
+                </div>
+              </div>
+            </section>
+          </>
         )}
 
         {/* Taux de capitalisation annuel - Expert mode only */}
