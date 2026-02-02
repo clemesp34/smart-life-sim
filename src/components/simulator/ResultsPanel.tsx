@@ -5,10 +5,27 @@ interface ResultsPanelProps {
   isOpen: boolean;
   onClose: () => void;
   montantRachete: string;
-  totalEpargne: string;
+  versementsAvant: string;
+  versementsApres: string;
+  interetsAvant: string;
+  interetsApres: string;
+  abattementDisponible: string;
+  isContractOver8Years: boolean;
+  tmi: string;
 }
 
-const ResultsPanel = ({ isOpen, onClose, montantRachete, totalEpargne }: ResultsPanelProps) => {
+const ResultsPanel = ({
+  isOpen,
+  onClose,
+  montantRachete,
+  versementsAvant,
+  versementsApres,
+  interetsAvant,
+  interetsApres,
+  abattementDisponible,
+  isContractOver8Years,
+  tmi,
+}: ResultsPanelProps) => {
   if (!isOpen) return null;
 
   const parseNumber = (value: string) => {
@@ -20,14 +37,46 @@ const ResultsPanel = ({ isOpen, onClose, montantRachete, totalEpargne }: Results
   };
 
   const montant = parseNumber(montantRachete);
-  const epargne = parseNumber(totalEpargne);
   
-  // Calculs simplifiés pour démonstration
-  const partCapital = epargne > 0 ? (montant * 0.7) : 0;
-  const partInterets = epargne > 0 ? (montant * 0.3) : 0;
-  const impositionBrute = partInterets * 0.128; // PFU 12.8%
-  const prelevementsSociaux = partInterets * 0.172; // 17.2%
-  const montantNet = montant - impositionBrute - prelevementsSociaux;
+  // Part en capital = somme des versements
+  const partCapital = parseNumber(versementsAvant) + parseNumber(versementsApres);
+  
+  // Part en intérêts = somme des intérêts
+  const partInterets = parseNumber(interetsAvant) + parseNumber(interetsApres);
+  
+  // Total épargne
+  const totalEpargne = partCapital + partInterets;
+  
+  // Ratio du montant racheté sur le total
+  const ratio = totalEpargne > 0 ? montant / totalEpargne : 0;
+  
+  // Parts proportionnelles au rachat
+  const partCapitalRachat = partCapital * ratio;
+  const partInteretsRachat = partInterets * ratio;
+  
+  // Abattement (seulement si contrat > 8 ans)
+  const abattement = isContractOver8Years ? parseNumber(abattementDisponible) : 0;
+  
+  // Intérêts taxables après abattement
+  const interetsTaxables = Math.max(0, partInteretsRachat - abattement);
+  
+  // TMI en pourcentage
+  const tmiRate = parseNumber(tmi) / 100;
+  
+  // Calcul PFU (12.8% + 17.2% prélèvements sociaux)
+  const impositionPFU = interetsTaxables * 0.128;
+  const prelevementsSociauxPFU = partInteretsRachat * 0.172;
+  const totalPFU = impositionPFU + prelevementsSociauxPFU;
+  const montantNetPFU = montant - totalPFU;
+  
+  // Calcul Barème progressif (TMI + 17.2% prélèvements sociaux)
+  const impositionBareme = interetsTaxables * tmiRate;
+  const prelevementsSociauxBareme = partInteretsRachat * 0.172;
+  const totalBareme = impositionBareme + prelevementsSociauxBareme;
+  const montantNetBareme = montant - totalBareme;
+  
+  // Déterminer le meilleur régime
+  const pfuIsBetter = totalPFU <= totalBareme;
 
   return (
     <div className="bg-card rounded-lg shadow-sm border border-border h-full">
@@ -39,46 +88,108 @@ const ResultsPanel = ({ isOpen, onClose, montantRachete, totalEpargne }: Results
       </div>
       
       <div className="p-6 space-y-6">
-        {/* KPIs principaux */}
-        <div className="space-y-4">
-          <div className="bg-primary/10 rounded-lg p-4">
-            <p className="text-sm text-muted-foreground mb-1">Montant net du rachat</p>
-            <p className="text-2xl font-bold text-primary">{formatNumber(montantNet)} €</p>
-          </div>
-
+        {/* Récapitulatif du rachat */}
+        <div className="space-y-3">
+          <h4 className="text-sm font-medium text-foreground">Récapitulatif du rachat</h4>
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-muted/50 rounded-lg p-3">
               <p className="text-xs text-muted-foreground mb-1">Part en capital</p>
-              <p className="text-lg font-semibold text-foreground">{formatNumber(partCapital)} €</p>
+              <p className="text-lg font-semibold text-foreground">{formatNumber(partCapitalRachat)} €</p>
             </div>
             <div className="bg-muted/50 rounded-lg p-3">
               <p className="text-xs text-muted-foreground mb-1">Part en intérêts</p>
-              <p className="text-lg font-semibold text-foreground">{formatNumber(partInterets)} €</p>
+              <p className="text-lg font-semibold text-foreground">{formatNumber(partInteretsRachat)} €</p>
             </div>
           </div>
-        </div>
-
-        {/* Détails fiscalité */}
-        <div className="space-y-3">
-          <h4 className="text-sm font-medium text-foreground">Détails fiscalité</h4>
           
-          <div className="space-y-2">
-            <div className="flex justify-between items-center py-2 border-b border-border">
-              <span className="text-sm text-muted-foreground">Imposition brute (PFU)</span>
-              <span className="text-sm font-medium text-foreground">{formatNumber(impositionBrute)} €</span>
+          {isContractOver8Years && (
+            <div className="bg-muted/30 rounded-lg p-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Abattement appliqué</span>
+                <span className="text-sm font-medium text-foreground">- {formatNumber(Math.min(abattement, partInteretsRachat))} €</span>
+              </div>
+              <div className="flex justify-between items-center mt-1">
+                <span className="text-sm text-muted-foreground">Intérêts taxables</span>
+                <span className="text-sm font-medium text-foreground">{formatNumber(interetsTaxables)} €</span>
+              </div>
             </div>
-            <div className="flex justify-between items-center py-2 border-b border-border">
-              <span className="text-sm text-muted-foreground">Prélèvements sociaux</span>
-              <span className="text-sm font-medium text-foreground">{formatNumber(prelevementsSociaux)} €</span>
+          )}
+        </div>
+
+        {/* Comparatif fiscal */}
+        <div className="space-y-3">
+          <h4 className="text-sm font-medium text-foreground">Comparatif fiscal</h4>
+          
+          <div className="grid grid-cols-2 gap-3">
+            {/* PFU */}
+            <div className={`rounded-lg p-4 border-2 ${pfuIsBetter ? 'border-primary bg-primary/5' : 'border-border bg-muted/30'}`}>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-medium text-foreground">PFU</span>
+                {pfuIsBetter && (
+                  <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded">Optimal</span>
+                )}
+              </div>
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">IR (12,8%)</span>
+                  <span className="text-foreground">{formatNumber(impositionPFU)} €</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">PS (17,2%)</span>
+                  <span className="text-foreground">{formatNumber(prelevementsSociauxPFU)} €</span>
+                </div>
+                <div className="flex justify-between pt-2 border-t border-border">
+                  <span className="font-medium text-foreground">Total</span>
+                  <span className="font-medium text-destructive">{formatNumber(totalPFU)} €</span>
+                </div>
+              </div>
+              <div className="mt-3 pt-3 border-t border-border">
+                <p className="text-xs text-muted-foreground">Montant net</p>
+                <p className="text-lg font-bold text-foreground">{formatNumber(montantNetPFU)} €</p>
+              </div>
             </div>
-            <div className="flex justify-between items-center py-2">
-              <span className="text-sm font-medium text-foreground">Total des prélèvements</span>
-              <span className="text-sm font-bold text-destructive">{formatNumber(impositionBrute + prelevementsSociaux)} €</span>
+            
+            {/* Barème progressif */}
+            <div className={`rounded-lg p-4 border-2 ${!pfuIsBetter ? 'border-primary bg-primary/5' : 'border-border bg-muted/30'}`}>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-medium text-foreground">Barème</span>
+                {!pfuIsBetter && (
+                  <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded">Optimal</span>
+                )}
+              </div>
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">IR ({tmi}%)</span>
+                  <span className="text-foreground">{formatNumber(impositionBareme)} €</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">PS (17,2%)</span>
+                  <span className="text-foreground">{formatNumber(prelevementsSociauxBareme)} €</span>
+                </div>
+                <div className="flex justify-between pt-2 border-t border-border">
+                  <span className="font-medium text-foreground">Total</span>
+                  <span className="font-medium text-destructive">{formatNumber(totalBareme)} €</span>
+                </div>
+              </div>
+              <div className="mt-3 pt-3 border-t border-border">
+                <p className="text-xs text-muted-foreground">Montant net</p>
+                <p className="text-lg font-bold text-foreground">{formatNumber(montantNetBareme)} €</p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Récapitulatif */}
+        {/* Économie potentielle */}
+        <div className="bg-primary/10 rounded-lg p-4">
+          <p className="text-sm text-muted-foreground mb-1">
+            Économie avec {pfuIsBetter ? 'PFU' : 'Barème'}
+          </p>
+          <p className="text-2xl font-bold text-primary">
+            {formatNumber(Math.abs(totalPFU - totalBareme))} €
+          </p>
+        </div>
+
+        {/* Données de base */}
         <div className="bg-muted/30 rounded-lg p-4 space-y-2">
           <div className="flex justify-between items-center">
             <span className="text-sm text-muted-foreground">Montant racheté</span>
@@ -86,7 +197,7 @@ const ResultsPanel = ({ isOpen, onClose, montantRachete, totalEpargne }: Results
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-muted-foreground">Épargne totale</span>
-            <span className="text-sm font-medium">{formatNumber(epargne)} €</span>
+            <span className="text-sm font-medium">{formatNumber(totalEpargne)} €</span>
           </div>
         </div>
       </div>

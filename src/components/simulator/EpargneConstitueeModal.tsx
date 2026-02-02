@@ -20,7 +20,7 @@ interface EpargneConstitueeModalProps {
   onInteretsAvantChange: (value: string) => void;
   onInteretsApresChange: (value: string) => void;
   totalEpargne: string;
-  showAvantSept17?: boolean;
+  showAvantSept17?: boolean; // true = afficher la colonne "Av. sept 17" (contrat avant 27/09/2017)
 }
 
 const EpargneConstitueeModal = ({
