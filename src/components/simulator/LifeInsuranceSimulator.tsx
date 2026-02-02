@@ -202,7 +202,7 @@ const LifeInsuranceSimulator = () => {
           {/* Données de la mission - Mode Simplifié */}
           {!isExpertMode && (
             <section>
-              <SectionTitle>Données de la mission</SectionTitle>
+              <SectionTitle>Données du contrat</SectionTitle>
               <div className="space-y-1">
                 <SimulatorDateInput
                   label="Date d'ouverture du contrat"
