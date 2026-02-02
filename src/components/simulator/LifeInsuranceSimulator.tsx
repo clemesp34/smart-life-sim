@@ -9,9 +9,11 @@ import SimulatorSelect from "./SimulatorSelect";
 import AllocationTable from "./AllocationTable";
 import FraisContratModal from "./FraisContratModal";
 import EpargneConstitueeModal from "./EpargneConstitueeModal";
+import ResultsPanel from "./ResultsPanel";
 
 const LifeInsuranceSimulator = () => {
   const [isExpertMode, setIsExpertMode] = useState(true);
+  const [showResults, setShowResults] = useState(false);
 
   // Données de la simulation
   const [dureeSimulation, setDureeSimulation] = useState("15");
@@ -109,10 +111,11 @@ const LifeInsuranceSimulator = () => {
     setInteretsAvant("25 000");
     setInteretsApres("25 000");
     setMontantRachete("0");
+    setShowResults(false);
   };
 
   const handleCalculate = () => {
-    // Logique de calcul à implémenter
+    setShowResults(true);
     console.log("Calcul lancé avec les paramètres:", {
       dureeSimulation,
       regimeImposition,
@@ -145,125 +148,66 @@ const LifeInsuranceSimulator = () => {
   };
 
   return (
-    <div className="bg-card rounded-lg shadow-sm border border-border max-w-lg mx-auto">
-      {/* Header avec switch */}
-      <div className="flex items-center justify-between p-4 border-b border-border">
-        <h2 className="text-lg font-semibold text-foreground">
-          Simulateur d'assurance vie
-        </h2>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">
-            {isExpertMode ? "Expert" : "Simplifié"}
-          </span>
-          <Switch
-            checked={isExpertMode}
-            onCheckedChange={setIsExpertMode}
-          />
-        </div>
-      </div>
-
-      <div className="p-6 space-y-6">
-        {/* Données de la simulation */}
-        <section>
-          <SectionTitle>Données de la simulation</SectionTitle>
-          <div className="space-y-1">
-            <SimulatorInput
-              label="Durée de la simulation"
-              value={dureeSimulation}
-              onChange={setDureeSimulation}
-              unit="ans"
-            />
-            <SimulatorSelect
-              label="Régime d'imposition"
-              value={regimeImposition}
-              onChange={setRegimeImposition}
-              options={[
-                { value: "pfu", label: "PFU" },
-                { value: "bareme", label: "Barème" },
-              ]}
-            />
-            <SimulatorDateInput
-              label="Date d'ouverture du contrat"
-              value={dateOuverture}
-              onChange={setDateOuverture}
+    <div className="flex gap-4 max-w-4xl mx-auto">
+      <div className={`bg-card rounded-lg shadow-sm border border-border transition-all duration-300 ${showResults && !isExpertMode ? 'w-1/2' : 'max-w-lg mx-auto w-full'}`}>
+        {/* Header avec switch */}
+        <div className="flex items-center justify-between p-4 border-b border-border">
+          <h2 className="text-lg font-semibold text-foreground">
+            Simulateur d'assurance vie
+          </h2>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">
+              {isExpertMode ? "Expert" : "Simplifié"}
+            </span>
+            <Switch
+              checked={isExpertMode}
+              onCheckedChange={(checked) => {
+                setIsExpertMode(checked);
+                setShowResults(false);
+              }}
             />
           </div>
-        </section>
+        </div>
 
-        {/* Situation du contrat - Expert mode */}
-        {isExpertMode && (
-          <section>
-            <SectionTitle>Situation du contrat au 01/01/2021</SectionTitle>
-            <div className="space-y-1">
-              <SimulatorDateInput
-                label="Date de dernière situation"
-                value={dateDerniereSituation}
-                onChange={setDateDerniereSituation}
-              />
-              <SimulatorInput
-                label="Total des primes versées"
-                value={totalPrimesVersees}
-                onChange={setTotalPrimesVersees}
-                unit="€"
-                required
-                info
-              />
-              <SimulatorInput
-                label="Total des montants rachetés"
-                value={totalMontantsRachetes}
-                onChange={setTotalMontantsRachetes}
-                unit="€"
-                info
-              />
-              <SimulatorInput
-                label="Valeur de rachat"
-                value={valeurRachat}
-                onChange={setValeurRachat}
-                unit="€"
-              />
-            </div>
-
-            <div className="mt-4">
-              <AllocationTable
-                fondsEuros={allocationFondsEuros}
-                ucHorsImmobilier={allocationUcHorsImmobilier}
-                ucImmobilier={allocationUcImmobilier}
-                onFondsEurosChange={setAllocationFondsEuros}
-                onUcHorsImmobilierChange={setAllocationUcHorsImmobilier}
-                onUcImmobilierChange={setAllocationUcImmobilier}
-              />
-            </div>
-          </section>
-        )}
-
-        {/* Mode simplifié - Situation fiscale et épargne */}
-        {!isExpertMode && (
-          <>
+        <div className="p-6 space-y-6">
+          {/* Données de la simulation - Mode Expert */}
+          {isExpertMode && (
             <section>
-              <SectionTitle>Situation fiscale et épargne</SectionTitle>
+              <SectionTitle>Données de la simulation</SectionTitle>
               <div className="space-y-1">
                 <SimulatorInput
-                  label="Revenu imposable"
-                  value={revenuImposable}
-                  onChange={setRevenuImposable}
-                  unit="€"
-                />
-                <SimulatorInput
-                  label="Nombre de part(s) fiscale(s)"
-                  value={nombreParts}
-                  onChange={setNombreParts}
+                  label="Durée de la simulation"
+                  value={dureeSimulation}
+                  onChange={setDureeSimulation}
+                  unit="ans"
                 />
                 <SimulatorSelect
-                  label="TMI"
-                  value={tmi}
-                  onChange={setTmi}
+                  label="Régime d'imposition"
+                  value={regimeImposition}
+                  onChange={setRegimeImposition}
                   options={[
-                    { value: "0", label: "0%" },
-                    { value: "11", label: "11%" },
-                    { value: "30", label: "30%" },
-                    { value: "41", label: "41%" },
-                    { value: "45", label: "45%" },
+                    { value: "pfu", label: "PFU" },
+                    { value: "bareme", label: "Barème" },
                   ]}
+                />
+                <SimulatorDateInput
+                  label="Date d'ouverture du contrat"
+                  value={dateOuverture}
+                  onChange={setDateOuverture}
+                />
+              </div>
+            </section>
+          )}
+
+          {/* Données de la mission - Mode Simplifié */}
+          {!isExpertMode && (
+            <section>
+              <SectionTitle>Données de la mission</SectionTitle>
+              <div className="space-y-1">
+                <SimulatorDateInput
+                  label="Date d'ouverture du contrat"
+                  value={dateOuverture}
+                  onChange={setDateOuverture}
                 />
                 <EpargneConstitueeModal
                   versementsAvant={versementsAvant}
@@ -279,85 +223,186 @@ const LifeInsuranceSimulator = () => {
                 />
               </div>
             </section>
+          )}
 
+          {/* Situation du contrat - Expert mode */}
+          {isExpertMode && (
             <section>
-              <SectionTitle>Rachat</SectionTitle>
-              <div className="flex items-center justify-between py-2">
-                <label className="text-sm text-muted-foreground">Montant racheté</label>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="text"
-                      value={montantRachete}
-                      onChange={(e) => setMontantRachete(e.target.value)}
-                      className="simulator-input w-28 text-right h-8 px-2 flex rounded-md border border-input bg-background text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:text-sm"
-                    />
-                    <span className="text-sm text-muted-foreground min-w-8">€</span>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleRachatTotal}
-                    className="text-xs h-8"
-                  >
-                    Rachat total
-                  </Button>
-                </div>
+              <SectionTitle>Situation du contrat au 01/01/2021</SectionTitle>
+              <div className="space-y-1">
+                <SimulatorDateInput
+                  label="Date de dernière situation"
+                  value={dateDerniereSituation}
+                  onChange={setDateDerniereSituation}
+                />
+                <SimulatorInput
+                  label="Total des primes versées"
+                  value={totalPrimesVersees}
+                  onChange={setTotalPrimesVersees}
+                  unit="€"
+                  required
+                  info
+                />
+                <SimulatorInput
+                  label="Total des montants rachetés"
+                  value={totalMontantsRachetes}
+                  onChange={setTotalMontantsRachetes}
+                  unit="€"
+                  info
+                />
+                <SimulatorInput
+                  label="Valeur de rachat"
+                  value={valeurRachat}
+                  onChange={setValeurRachat}
+                  unit="€"
+                />
+              </div>
+
+              <div className="mt-4">
+                <AllocationTable
+                  fondsEuros={allocationFondsEuros}
+                  ucHorsImmobilier={allocationUcHorsImmobilier}
+                  ucImmobilier={allocationUcImmobilier}
+                  onFondsEurosChange={setAllocationFondsEuros}
+                  onUcHorsImmobilierChange={setAllocationUcHorsImmobilier}
+                  onUcImmobilierChange={setAllocationUcImmobilier}
+                />
               </div>
             </section>
-          </>
-        )}
+          )}
 
-        {/* Taux de capitalisation annuel - Expert mode only */}
-        {isExpertMode && (
-          <section>
-            <SectionTitle>Taux de capitalisation annuel</SectionTitle>
-            <AllocationTable
-              fondsEuros={tauxFondsEuros}
-              ucHorsImmobilier={tauxUcHorsImmobilier}
-              ucImmobilier={tauxUcImmobilier}
-              onFondsEurosChange={setTauxFondsEuros}
-              onUcHorsImmobilierChange={setTauxUcHorsImmobilier}
-              onUcImmobilierChange={setTauxUcImmobilier}
-            />
-          </section>
-        )}
+          {/* Mode simplifié - Situation fiscale */}
+          {!isExpertMode && (
+            <>
+              <section>
+                <SectionTitle>Situation fiscale</SectionTitle>
+                <div className="space-y-1">
+                  <SimulatorInput
+                    label="Revenu imposable"
+                    value={revenuImposable}
+                    onChange={setRevenuImposable}
+                    unit="€"
+                  />
+                  <SimulatorSelect
+                    label="Régime d'imposition"
+                    value={regimeImposition}
+                    onChange={setRegimeImposition}
+                    options={[
+                      { value: "pfu", label: "PFU" },
+                      { value: "bareme", label: "Barème" },
+                    ]}
+                  />
+                  <SimulatorInput
+                    label="Nombre de part(s) fiscale(s)"
+                    value={nombreParts}
+                    onChange={setNombreParts}
+                  />
+                  <SimulatorSelect
+                    label="TMI"
+                    value={tmi}
+                    onChange={setTmi}
+                    options={[
+                      { value: "0", label: "0%" },
+                      { value: "11", label: "11%" },
+                      { value: "30", label: "30%" },
+                      { value: "41", label: "41%" },
+                      { value: "45", label: "45%" },
+                    ]}
+                  />
+                </div>
+              </section>
 
-        {/* Frais du contrat - Expert mode only */}
-        {isExpertMode && (
-          <section>
-            <FraisContratModal
-              fraisGestionFondsEuros={fraisGestionFondsEuros}
-              fraisGestionUc={fraisGestionUc}
-              fraisSouscriptionFondsEuros={fraisSouscriptionFondsEuros}
-              fraisSouscriptionUc={fraisSouscriptionUc}
-              onFraisGestionFondsEurosChange={setFraisGestionFondsEuros}
-              onFraisGestionUcChange={setFraisGestionUc}
-              onFraisSouscriptionFondsEurosChange={setFraisSouscriptionFondsEuros}
-              onFraisSouscriptionUcChange={setFraisSouscriptionUc}
-            />
-          </section>
-        )}
+              <section>
+                <SectionTitle>Rachat</SectionTitle>
+                <div className="flex items-center justify-between py-2">
+                  <label className="text-sm text-muted-foreground">Montant racheté</label>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="text"
+                        value={montantRachete}
+                        onChange={(e) => setMontantRachete(e.target.value)}
+                        className="simulator-input w-28 text-right h-8 px-2 flex rounded-md border border-input bg-background text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:text-sm"
+                      />
+                      <span className="text-sm text-muted-foreground min-w-8">€</span>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleRachatTotal}
+                      className="text-xs h-8"
+                    >
+                      Rachat total
+                    </Button>
+                  </div>
+                </div>
+              </section>
+            </>
+          )}
 
-        {/* Actions */}
-        <div className="flex items-center justify-center gap-8 pt-4 border-t border-border">
-          <Button
-            variant="ghost"
-            onClick={handleReset}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            Annuler
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={handleCalculate}
-            className="text-primary hover:text-primary/80 flex items-center gap-2"
-          >
-            <Calculator className="w-4 h-4" />
-            Calculer
-          </Button>
+          {/* Taux de capitalisation annuel - Expert mode only */}
+          {isExpertMode && (
+            <section>
+              <SectionTitle>Taux de capitalisation annuel</SectionTitle>
+              <AllocationTable
+                fondsEuros={tauxFondsEuros}
+                ucHorsImmobilier={tauxUcHorsImmobilier}
+                ucImmobilier={tauxUcImmobilier}
+                onFondsEurosChange={setTauxFondsEuros}
+                onUcHorsImmobilierChange={setTauxUcHorsImmobilier}
+                onUcImmobilierChange={setTauxUcImmobilier}
+              />
+            </section>
+          )}
+
+          {/* Frais du contrat - Expert mode only */}
+          {isExpertMode && (
+            <section>
+              <FraisContratModal
+                fraisGestionFondsEuros={fraisGestionFondsEuros}
+                fraisGestionUc={fraisGestionUc}
+                fraisSouscriptionFondsEuros={fraisSouscriptionFondsEuros}
+                fraisSouscriptionUc={fraisSouscriptionUc}
+                onFraisGestionFondsEurosChange={setFraisGestionFondsEuros}
+                onFraisGestionUcChange={setFraisGestionUc}
+                onFraisSouscriptionFondsEurosChange={setFraisSouscriptionFondsEuros}
+                onFraisSouscriptionUcChange={setFraisSouscriptionUc}
+              />
+            </section>
+          )}
+
+          {/* Actions */}
+          <div className="flex items-center justify-center gap-8 pt-4 border-t border-border">
+            <Button
+              variant="ghost"
+              onClick={handleReset}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Annuler
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={handleCalculate}
+              className="text-primary hover:text-primary/80 flex items-center gap-2"
+            >
+              <Calculator className="w-4 h-4" />
+              Calculer
+            </Button>
+          </div>
         </div>
       </div>
+
+      {/* Panneau des résultats - Mode Simplifié uniquement */}
+      {!isExpertMode && showResults && (
+        <div className="w-1/2 animate-in slide-in-from-right duration-300">
+          <ResultsPanel
+            isOpen={showResults}
+            onClose={() => setShowResults(false)}
+            montantRachete={montantRachete}
+            totalEpargne={totalEpargne}
+          />
+        </div>
+      )}
     </div>
   );
 };
