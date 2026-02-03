@@ -85,10 +85,14 @@ const LifeInsuranceSimulator = () => {
     return diffYears >= 8;
   };
 
+  // Valeurs effectives des versements/intérêts avant sept 17 (0 si contrat après cette date)
+  const effectiveVersementsAvant = isContractBeforeSept2017() ? parseNumber(versementsAvant) : 0;
+  const effectiveInteretsAvant = isContractBeforeSept2017() ? parseNumber(interetsAvant) : 0;
+
   const totalEpargne = formatNumber(
-    parseNumber(versementsAvant) +
+    effectiveVersementsAvant +
     parseNumber(versementsApres) +
-    parseNumber(interetsAvant) +
+    effectiveInteretsAvant +
     parseNumber(interetsApres)
   );
 
@@ -321,23 +325,21 @@ const LifeInsuranceSimulator = () => {
                       { value: "45", label: "45%" },
                     ]}
                   />
-                  {isContractOver8Years() && (
-                    <SimulatorInput
-                      label="Abattement disponible"
-                      value={abattementDisponible}
-                      onChange={(val) => {
-                        const num = parseNumber(val);
-                        if (num <= 9200) {
-                          setAbattementDisponible(val);
-                        } else {
-                          setAbattementDisponible("9 200");
-                        }
-                      }}
-                      unit="€"
-                      info
-                      disabled
-                    />
-                  )}
+                  <SimulatorInput
+                    label="Abattement disponible"
+                    value={abattementDisponible}
+                    onChange={(val) => {
+                      const num = parseNumber(val);
+                      if (num <= 9200) {
+                        setAbattementDisponible(val);
+                      } else {
+                        setAbattementDisponible("9 200");
+                      }
+                    }}
+                    unit="€"
+                    info
+                    disabled={!isContractOver8Years()}
+                  />
                 </div>
               </section>
 
@@ -428,9 +430,9 @@ const LifeInsuranceSimulator = () => {
             isOpen={showResults}
             onClose={() => setShowResults(false)}
             montantRachete={montantRachete}
-            versementsAvant={versementsAvant}
+            versementsAvant={isContractBeforeSept2017() ? versementsAvant : "0"}
             versementsApres={versementsApres}
-            interetsAvant={interetsAvant}
+            interetsAvant={isContractBeforeSept2017() ? interetsAvant : "0"}
             interetsApres={interetsApres}
             abattementDisponible={abattementDisponible}
             isContractOver8Years={isContractOver8Years()}
