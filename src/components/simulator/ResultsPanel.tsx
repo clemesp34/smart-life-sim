@@ -38,21 +38,20 @@ const ResultsPanel = ({
 
   const montant = parseNumber(montantRachete);
   
-  // Part en capital = somme des versements
-  const partCapital = parseNumber(versementsAvant) + parseNumber(versementsApres);
+  // Total des versements et intérêts
+  const totalVersements = parseNumber(versementsAvant) + parseNumber(versementsApres);
+  const totalInterets = parseNumber(interetsAvant) + parseNumber(interetsApres);
   
-  // Part en intérêts = somme des intérêts
-  const partInterets = parseNumber(interetsAvant) + parseNumber(interetsApres);
+  // Épargne constituée = somme des versements + intérêts
+  const totalEpargne = totalVersements + totalInterets;
   
-  // Total épargne
-  const totalEpargne = partCapital + partInterets;
+  // Quotité de capital et d'intérêts
+  const quotiteCapital = totalEpargne > 0 ? totalVersements / totalEpargne : 0;
+  const quotiteInterets = totalEpargne > 0 ? totalInterets / totalEpargne : 0; // = 1 - quotiteCapital
   
-  // Ratio du montant racheté sur le total
-  const ratio = totalEpargne > 0 ? montant / totalEpargne : 0;
-  
-  // Parts proportionnelles au rachat
-  const partCapitalRachat = partCapital * ratio;
-  const partInteretsRachat = partInterets * ratio;
+  // Parts dans le rachat
+  const partCapitalRachat = montant * quotiteCapital;
+  const partInteretsRachat = montant * quotiteInterets; // = montant - partCapitalRachat
   
   // Abattement (seulement si contrat > 8 ans)
   const abattement = isContractOver8Years ? parseNumber(abattementDisponible) : 0;
@@ -63,13 +62,13 @@ const ResultsPanel = ({
   // TMI en pourcentage
   const tmiRate = parseNumber(tmi) / 100;
   
-  // Calcul PFU (12.8% + 17.2% prélèvements sociaux)
+  // Calcul PFU: IR (12,8%) = (part intérêts - abattement) * 12,8% | PS (17,2%) = part intérêts * 17,2%
   const impositionPFU = interetsTaxables * 0.128;
   const prelevementsSociauxPFU = partInteretsRachat * 0.172;
   const totalPFU = impositionPFU + prelevementsSociauxPFU;
   const montantNetPFU = montant - totalPFU;
   
-  // Calcul Barème progressif (TMI + 17.2% prélèvements sociaux)
+  // Calcul Barème: IR (TMI%) = (part intérêts - abattement) * TMI | PS (17,2%) = part intérêts * 17,2%
   const impositionBareme = interetsTaxables * tmiRate;
   const prelevementsSociauxBareme = partInteretsRachat * 0.172;
   const totalBareme = impositionBareme + prelevementsSociauxBareme;

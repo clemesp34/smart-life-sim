@@ -335,6 +335,7 @@ const LifeInsuranceSimulator = () => {
                       }}
                       unit="€"
                       info
+                      disabled
                     />
                   )}
                 </div>

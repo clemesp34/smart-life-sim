@@ -8,6 +8,7 @@ interface SimulatorInputProps {
   info?: boolean;
   required?: boolean;
   type?: "text" | "number";
+  disabled?: boolean;
 }
 
 const SimulatorInput = ({ 
@@ -17,7 +18,8 @@ const SimulatorInput = ({
   unit, 
   info = false,
   required = false,
-  type = "text"
+  type = "text",
+  disabled = false
 }: SimulatorInputProps) => {
   return (
     <div className="flex items-center justify-between py-2">
@@ -35,7 +37,8 @@ const SimulatorInput = ({
           type={type}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="simulator-input w-28 text-right h-8 px-2"
+          disabled={disabled}
+          className={`simulator-input w-28 text-right h-8 px-2 ${disabled ? 'opacity-50 cursor-not-allowed bg-muted' : ''}`}
         />
         {unit && <span className="text-sm text-muted-foreground min-w-8">{unit}</span>}
       </div>
