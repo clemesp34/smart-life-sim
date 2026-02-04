@@ -133,7 +133,12 @@ const ResultsPanel = ({
   // Calcul Barème: IR (TMI%) = (part intérêts - abattement) * TMI | PS (17,2%) = part intérêts * 17,2%
   const impositionBareme = interetsTaxables * tmiRate;
   const prelevementsSociauxBareme = partInteretsRachat * 0.172;
-  const totalBareme = impositionBareme + prelevementsSociauxBareme + cehrBareme;
+  
+  // CSG déductible (uniquement pour le barème): 6,8% des intérêts taxables → gain = CSG déductible × TMI
+  const csgDeductible = interetsTaxables * 0.068;
+  const gainCsgDeductible = csgDeductible * tmiRate;
+  
+  const totalBareme = impositionBareme + prelevementsSociauxBareme + cehrBareme - gainCsgDeductible;
   const montantNetBareme = montant - totalBareme;
   
   // Déterminer le meilleur régime
@@ -256,6 +261,12 @@ const ResultsPanel = ({
                   <span className="text-muted-foreground">CEHR ({cehrRate}%)</span>
                   <span className="text-foreground">{formatNumber(cehrBareme)} €</span>
                 </div>
+                {gainCsgDeductible > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">CSG déductible (6,8%)</span>
+                    <span className="text-green-600">- {formatNumber(gainCsgDeductible)} €</span>
+                  </div>
+                )}
                 <div className="flex justify-between pt-2 border-t border-border">
                   <span className="font-medium text-foreground">Total</span>
                   <span className="font-medium text-destructive">{formatNumber(totalBareme)} €</span>
