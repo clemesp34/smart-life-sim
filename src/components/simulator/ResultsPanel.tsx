@@ -12,6 +12,8 @@ interface ResultsPanelProps {
   abattementDisponible: string;
   isContractOver8Years: boolean;
   tmi: string;
+  revenuImposable: string;
+  nombreParts: string;
 }
 
 const ResultsPanel = ({
@@ -25,6 +27,8 @@ const ResultsPanel = ({
   abattementDisponible,
   isContractOver8Years,
   tmi,
+  revenuImposable,
+  nombreParts,
 }: ResultsPanelProps) => {
   if (!isOpen) return null;
 
@@ -37,6 +41,8 @@ const ResultsPanel = ({
   };
 
   const montant = parseNumber(montantRachete);
+  const revenu = parseNumber(revenuImposable);
+  const parts = parseNumber(nombreParts);
   
   // Total des versements et intérêts
   const totalVersements = parseNumber(versementsAvant) + parseNumber(versementsApres);
@@ -62,16 +68,56 @@ const ResultsPanel = ({
   // TMI en pourcentage
   const tmiRate = parseNumber(tmi) / 100;
   
+  // Calcul CEHR (Contribution Exceptionnelle sur les Hauts Revenus)
+  const calculateCEHR = (interetsTaxablesValue: number) => {
+    const revenuPlusInterets = revenu + interetsTaxablesValue;
+    
+    if (parts === 1) {
+      // Part fiscale = 1
+      if (revenuPlusInterets > 500000) {
+        return interetsTaxablesValue * 0.04; // 4%
+      } else if (revenuPlusInterets > 250000) {
+        return interetsTaxablesValue * 0.03; // 3%
+      }
+    } else if (parts >= 2) {
+      // Part fiscale >= 2
+      if (revenuPlusInterets > 1000000) {
+        return interetsTaxablesValue * 0.04; // 4%
+      } else if (revenuPlusInterets > 500000) {
+        return interetsTaxablesValue * 0.03; // 3%
+      }
+    }
+    return 0;
+  };
+  
+  const getCEHRRate = (interetsTaxablesValue: number) => {
+    const revenuPlusInterets = revenu + interetsTaxablesValue;
+    
+    if (parts === 1) {
+      if (revenuPlusInterets > 500000) return 4;
+      if (revenuPlusInterets > 250000) return 3;
+    } else if (parts >= 2) {
+      if (revenuPlusInterets > 1000000) return 4;
+      if (revenuPlusInterets > 500000) return 3;
+    }
+    return 0;
+  };
+  
+  // CEHR s'applique aux deux régimes
+  const cehrPFU = calculateCEHR(interetsTaxables);
+  const cehrBareme = calculateCEHR(interetsTaxables);
+  const cehrRate = getCEHRRate(interetsTaxables);
+  
   // Calcul PFU: IR (12,8%) = (part intérêts - abattement) * 12,8% | PS (17,2%) = part intérêts * 17,2%
   const impositionPFU = interetsTaxables * 0.128;
   const prelevementsSociauxPFU = partInteretsRachat * 0.172;
-  const totalPFU = impositionPFU + prelevementsSociauxPFU;
+  const totalPFU = impositionPFU + prelevementsSociauxPFU + cehrPFU;
   const montantNetPFU = montant - totalPFU;
   
   // Calcul Barème: IR (TMI%) = (part intérêts - abattement) * TMI | PS (17,2%) = part intérêts * 17,2%
   const impositionBareme = interetsTaxables * tmiRate;
   const prelevementsSociauxBareme = partInteretsRachat * 0.172;
-  const totalBareme = impositionBareme + prelevementsSociauxBareme;
+  const totalBareme = impositionBareme + prelevementsSociauxBareme + cehrBareme;
   const montantNetBareme = montant - totalBareme;
   
   // Déterminer le meilleur régime
@@ -137,6 +183,10 @@ const ResultsPanel = ({
                   <span className="text-muted-foreground">PS (17,2%)</span>
                   <span className="text-foreground">{formatNumber(prelevementsSociauxPFU)} €</span>
                 </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">CEHR ({cehrRate}%)</span>
+                  <span className="text-foreground">{formatNumber(cehrPFU)} €</span>
+                </div>
                 <div className="flex justify-between pt-2 border-t border-border">
                   <span className="font-medium text-foreground">Total</span>
                   <span className="font-medium text-destructive">{formatNumber(totalPFU)} €</span>
@@ -164,6 +214,10 @@ const ResultsPanel = ({
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">PS (17,2%)</span>
                   <span className="text-foreground">{formatNumber(prelevementsSociauxBareme)} €</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">CEHR ({cehrRate}%)</span>
+                  <span className="text-foreground">{formatNumber(cehrBareme)} €</span>
                 </div>
                 <div className="flex justify-between pt-2 border-t border-border">
                   <span className="font-medium text-foreground">Total</span>

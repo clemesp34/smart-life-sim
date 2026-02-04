@@ -437,6 +437,8 @@ const LifeInsuranceSimulator = () => {
             abattementDisponible={abattementDisponible}
             isContractOver8Years={isContractOver8Years()}
             tmi={tmi}
+            revenuImposable={revenuImposable}
+            nombreParts={nombreParts}
           />
         </div>
       )}
