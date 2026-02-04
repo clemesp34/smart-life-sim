@@ -46,24 +46,40 @@ const ResultsPanel = ({
   
   // Total des versements et intérêts
   const totalVersements = parseNumber(versementsAvant) + parseNumber(versementsApres);
-  const totalInterets = parseNumber(interetsAvant) + parseNumber(interetsApres);
+  const interetsAvantValue = parseNumber(interetsAvant);
+  const interetsApresValue = parseNumber(interetsApres);
+  const totalInterets = interetsAvantValue + interetsApresValue;
   
   // Épargne constituée = somme des versements + intérêts
   const totalEpargne = totalVersements + totalInterets;
   
   // Quotité de capital et d'intérêts
   const quotiteCapital = totalEpargne > 0 ? totalVersements / totalEpargne : 0;
-  const quotiteInterets = totalEpargne > 0 ? totalInterets / totalEpargne : 0; // = 1 - quotiteCapital
+  const quotiteInterets = totalEpargne > 0 ? totalInterets / totalEpargne : 0;
   
   // Parts dans le rachat
   const partCapitalRachat = montant * quotiteCapital;
-  const partInteretsRachat = montant * quotiteInterets; // = montant - partCapitalRachat
+  const partInteretsRachat = montant * quotiteInterets;
+  
+  // Répartition des intérêts du rachat entre av. et ap. sept 17 (prorata)
+  const quotiteInteretsAvant = totalInterets > 0 ? interetsAvantValue / totalInterets : 0;
+  const quotiteInteretsApres = totalInterets > 0 ? interetsApresValue / totalInterets : 0;
+  const partInteretsAvantRachat = partInteretsRachat * quotiteInteretsAvant;
+  const partInteretsApresRachat = partInteretsRachat * quotiteInteretsApres;
   
   // Abattement (seulement si contrat > 8 ans)
   const abattement = isContractOver8Years ? parseNumber(abattementDisponible) : 0;
   
-  // Intérêts taxables après abattement
-  const interetsTaxables = Math.max(0, partInteretsRachat - abattement);
+  // Application de l'abattement en priorité sur les intérêts av. sept 17, puis ap. sept 17
+  const abattementSurAvant = Math.min(abattement, partInteretsAvantRachat);
+  const abattementRestant = abattement - abattementSurAvant;
+  const abattementSurApres = Math.min(abattementRestant, partInteretsApresRachat);
+  const abattementTotal = abattementSurAvant + abattementSurApres;
+  
+  // Intérêts taxables après abattement (pour chaque période)
+  const interetsTaxablesAvant = Math.max(0, partInteretsAvantRachat - abattementSurAvant);
+  const interetsTaxablesApres = Math.max(0, partInteretsApresRachat - abattementSurApres);
+  const interetsTaxables = interetsTaxablesAvant + interetsTaxablesApres;
   
   // TMI en pourcentage
   const tmiRate = parseNumber(tmi) / 100;
@@ -73,18 +89,16 @@ const ResultsPanel = ({
     const revenuPlusInterets = revenu + interetsTaxablesValue;
     
     if (parts === 1) {
-      // Part fiscale = 1
       if (revenuPlusInterets > 500000) {
-        return interetsTaxablesValue * 0.04; // 4%
+        return interetsTaxablesValue * 0.04;
       } else if (revenuPlusInterets > 250000) {
-        return interetsTaxablesValue * 0.03; // 3%
+        return interetsTaxablesValue * 0.03;
       }
     } else if (parts >= 2) {
-      // Part fiscale >= 2
       if (revenuPlusInterets > 1000000) {
-        return interetsTaxablesValue * 0.04; // 4%
+        return interetsTaxablesValue * 0.04;
       } else if (revenuPlusInterets > 500000) {
-        return interetsTaxablesValue * 0.03; // 3%
+        return interetsTaxablesValue * 0.03;
       }
     }
     return 0;
@@ -108,8 +122,10 @@ const ResultsPanel = ({
   const cehrBareme = calculateCEHR(interetsTaxables);
   const cehrRate = getCEHRRate(interetsTaxables);
   
-  // Calcul PFU: IR (12,8%) = (part intérêts - abattement) * 12,8% | PS (17,2%) = part intérêts * 17,2%
-  const impositionPFU = interetsTaxables * 0.128;
+  // Calcul PFU: intérêts av. sept 17 à 7,5% | intérêts ap. sept 17 à 12,8% | PS (17,2%) sur tous les intérêts
+  const impositionPFUAvant = interetsTaxablesAvant * 0.075; // 7,5%
+  const impositionPFUApres = interetsTaxablesApres * 0.128; // 12,8%
+  const impositionPFU = impositionPFUAvant + impositionPFUApres;
   const prelevementsSociauxPFU = partInteretsRachat * 0.172;
   const totalPFU = impositionPFU + prelevementsSociauxPFU + cehrPFU;
   const montantNetPFU = montant - totalPFU;
@@ -151,7 +167,7 @@ const ResultsPanel = ({
             <div className="bg-muted/30 rounded-lg p-3">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Abattement appliqué</span>
-                <span className="text-sm font-medium text-foreground">- {formatNumber(Math.min(abattement, partInteretsRachat))} €</span>
+                <span className="text-sm font-medium text-foreground">- {formatNumber(abattementTotal)} €</span>
               </div>
               <div className="flex justify-between items-center mt-1">
                 <span className="text-sm text-muted-foreground">Intérêts taxables</span>
@@ -159,6 +175,19 @@ const ResultsPanel = ({
               </div>
             </div>
           )}
+          
+          {/* Détail intérêts av/ap sept 17 */}
+          <div className="bg-muted/30 rounded-lg p-3 space-y-2">
+            <p className="text-xs font-medium text-muted-foreground">Répartition des intérêts du rachat</p>
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-muted-foreground">Intérêts av. sept 17</span>
+              <span className="text-xs font-medium text-foreground">{formatNumber(partInteretsAvantRachat)} €</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-muted-foreground">Intérêts ap. sept 17</span>
+              <span className="text-xs font-medium text-foreground">{formatNumber(partInteretsApresRachat)} €</span>
+            </div>
+          </div>
         </div>
 
         {/* Comparatif fiscal */}
@@ -175,10 +204,18 @@ const ResultsPanel = ({
                 )}
               </div>
               <div className="space-y-2 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">IR (12,8%)</span>
-                  <span className="text-foreground">{formatNumber(impositionPFU)} €</span>
-                </div>
+                {interetsTaxablesAvant > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">IR av. sept 17 (7,5%)</span>
+                    <span className="text-foreground">{formatNumber(impositionPFUAvant)} €</span>
+                  </div>
+                )}
+                {interetsTaxablesApres > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">IR ap. sept 17 (12,8%)</span>
+                    <span className="text-foreground">{formatNumber(impositionPFUApres)} €</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">PS (17,2%)</span>
                   <span className="text-foreground">{formatNumber(prelevementsSociauxPFU)} €</span>
