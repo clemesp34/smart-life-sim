@@ -17,7 +17,6 @@ const LifeInsuranceSimulator = () => {
 
   // Données de la simulation
   const [dureeSimulation, setDureeSimulation] = useState("15");
-  const [regimeImposition, setRegimeImposition] = useState("pfu");
   const [dateOuverture, setDateOuverture] = useState("01/01/2020");
 
   // Situation du contrat
@@ -102,7 +101,6 @@ const LifeInsuranceSimulator = () => {
 
   const handleReset = () => {
     setDureeSimulation("15");
-    setRegimeImposition("pfu");
     setDateOuverture("01/01/2020");
     setDateDerniereSituation("01/01/2021");
     setTotalPrimesVersees("1 000 000");
@@ -134,7 +132,6 @@ const LifeInsuranceSimulator = () => {
     setShowResults(true);
     console.log("Calcul lancé avec les paramètres:", {
       dureeSimulation,
-      regimeImposition,
       dateOuverture,
       dateDerniereSituation,
       totalPrimesVersees,
@@ -196,15 +193,7 @@ const LifeInsuranceSimulator = () => {
                   value={dureeSimulation}
                   onChange={setDureeSimulation}
                   unit="ans"
-                />
-                <SimulatorSelect
-                  label="Régime d'imposition"
-                  value={regimeImposition}
-                  onChange={setRegimeImposition}
-                  options={[
-                    { value: "pfu", label: "PFU" },
-                    { value: "bareme", label: "Barème" },
-                  ]}
+                  formatThousands={false}
                 />
                 <SimulatorDateInput
                   label="Date d'ouverture du contrat"
@@ -299,19 +288,11 @@ const LifeInsuranceSimulator = () => {
                     onChange={setRevenuImposable}
                     unit="€"
                   />
-                  <SimulatorSelect
-                    label="Régime d'imposition"
-                    value={regimeImposition}
-                    onChange={setRegimeImposition}
-                    options={[
-                      { value: "pfu", label: "PFU" },
-                      { value: "bareme", label: "Barème" },
-                    ]}
-                  />
                   <SimulatorInput
                     label="Nombre de part(s) fiscale(s)"
                     value={nombreParts}
                     onChange={setNombreParts}
+                  formatThousands={false}
                   />
                   <SimulatorSelect
                     label="TMI"
@@ -351,8 +332,8 @@ const LifeInsuranceSimulator = () => {
                     <div className="flex items-center gap-1">
                       <input
                         type="text"
-                        value={montantRachete}
-                        onChange={(e) => setMontantRachete(e.target.value)}
+                        value={parseNumber(montantRachete).toLocaleString("fr-FR")}
+                        onChange={(e) => setMontantRachete(e.target.value.replace(/\s/g, ""))}
                         className="simulator-input w-28 text-right h-8 px-2 flex rounded-md border border-input bg-background text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:text-sm"
                       />
                       <span className="text-sm text-muted-foreground min-w-8">€</span>

@@ -194,50 +194,63 @@ const ResultsPanel = ({
           </div>
           
           {/* Détail intérêts av/ap sept 17 avec abattement */}
-          <div className="bg-muted/30 rounded-lg p-3 space-y-2">
-            <p className="text-xs font-medium text-muted-foreground">Répartition des intérêts du rachat</p>
-            
-            {/* Intérêts avant sept 17 */}
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Intérêts av. sept 17</span>
-              <span className="text-xs font-medium text-foreground">{formatNumber(partInteretsAvantRachat)} €</span>
+          <div className="rounded-lg border border-border overflow-hidden">
+            <div className="bg-muted px-3 py-2">
+              <p className="text-xs font-medium text-foreground">Répartition des intérêts du rachat</p>
             </div>
-            {isContractOver8Years && abattementSurAvant > 0 && (
-              <div className="flex justify-between items-center pl-3">
-                <span className="text-xs text-muted-foreground">Abattement appliqué</span>
-                <span className="text-xs font-medium text-foreground">- {formatNumber(abattementSurAvant)} €</span>
-              </div>
-            )}
             
-            {/* Intérêts après sept 17 - part à 7,5% */}
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Intérêts ap. sept 17 (7,5%)</span>
-              <span className="text-xs font-medium text-foreground">{formatNumber(interetsApres75)} €</span>
-            </div>
-            {isContractOver8Years && abattementSurApres75 > 0 && (
-              <div className="flex justify-between items-center pl-3">
-                <span className="text-xs text-muted-foreground">Abattement appliqué</span>
-                <span className="text-xs font-medium text-foreground">- {formatNumber(abattementSurApres75)} €</span>
+            <div className="divide-y divide-border">
+              {/* Intérêts avant sept 17 */}
+              <div className="px-3 py-2 bg-card">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Intérêts av. sept 17 (7,5%)</span>
+                  <span className="text-xs font-medium text-foreground">{formatNumber(partInteretsAvantRachat)} €</span>
+                </div>
+                {isContractOver8Years && abattementSurAvant > 0 && (
+                  <div className="flex justify-between items-center mt-1 pl-2 text-xs italic">
+                    <span>Abattement</span>
+                    <span className="text-primary">- {formatNumber(abattementSurAvant)} €</span>
+                  </div>
+                )}
               </div>
-            )}
             
-            {/* Intérêts après sept 17 - part à 12,8% */}
-            {interetsApres128 > 0 && (
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-muted-foreground">Intérêts ap. sept 17 (12,8%)</span>
-                <span className="text-xs font-medium text-foreground">{formatNumber(interetsApres128)} €</span>
+              {/* Intérêts après sept 17 - part à 7,5% */}
+              <div className="px-3 py-2 bg-card">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Intérêts ap. sept 17 (7,5%)</span>
+                  <span className="text-xs font-medium text-foreground">{formatNumber(interetsApres75)} €</span>
+                </div>
+                {isContractOver8Years && abattementSurApres75 > 0 && (
+                  <div className="flex justify-between items-center mt-1 pl-2 text-xs italic">
+                    <span>Abattement</span>
+                    <span className="text-primary">- {formatNumber(abattementSurApres75)} €</span>
+                  </div>
+                )}
               </div>
-            )}
-            {isContractOver8Years && abattementSurApres128 > 0 && (
-              <div className="flex justify-between items-center pl-3">
-                <span className="text-xs text-muted-foreground">Abattement appliqué</span>
-                <span className="text-xs font-medium text-foreground">- {formatNumber(abattementSurApres128)} €</span>
-              </div>
-            )}
             
-            <div className="flex justify-between items-center pt-2 border-t border-border">
-              <span className="text-xs font-medium text-foreground">Intérêts taxables</span>
-              <span className="text-xs font-medium text-foreground">{formatNumber(interetsTaxables)} €</span>
+              {/* Intérêts après sept 17 - part à 12,8% */}
+              {interetsApres128 > 0 && (
+                <div className="px-3 py-2 bg-card">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-muted-foreground">Intérêts ap. sept 17 (12,8%)</span>
+                    <span className="text-xs font-medium text-foreground">{formatNumber(interetsApres128)} €</span>
+                  </div>
+                  {isContractOver8Years && abattementSurApres128 > 0 && (
+                    <div className="flex justify-between items-center mt-1 pl-2 text-xs italic">
+                      <span>Abattement</span>
+                      <span className="text-primary">- {formatNumber(abattementSurApres128)} €</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            
+              {/* Total intérêts taxables */}
+              <div className="px-3 py-2 bg-muted/50">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-semibold text-foreground">Intérêts taxables</span>
+                  <span className="text-xs font-semibold text-foreground">{formatNumber(interetsTaxables)} €</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -317,7 +330,7 @@ const ResultsPanel = ({
                 {gainCsgDeductible > 0 && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">CSG déductible (6,8%)</span>
-                    <span className="text-green-600">- {formatNumber(gainCsgDeductible)} €</span>
+                    <span className="text-primary">- {formatNumber(gainCsgDeductible)} €</span>
                   </div>
                 )}
                 <div className="flex justify-between pt-2 border-t border-border">
