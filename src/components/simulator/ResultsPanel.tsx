@@ -70,16 +70,40 @@ const ResultsPanel = ({
   // Abattement (seulement si contrat > 8 ans)
   const abattement = isContractOver8Years ? parseNumber(abattementDisponible) : 0;
   
-  // Application de l'abattement en priorité sur les intérêts av. sept 17, puis ap. sept 17
-  const abattementSurAvant = Math.min(abattement, partInteretsAvantRachat);
-  const abattementRestant = abattement - abattementSurAvant;
-  const abattementSurApres = Math.min(abattementRestant, partInteretsApresRachat);
-  const abattementTotal = abattementSurAvant + abattementSurApres;
+  // Règle des 150 000 € pour intérêts ap. sept 17 au PFU
+  // Calcul de la part des intérêts ap. sept 17 éligible au taux de 7,5%
+  const versementsAvantValue = parseNumber(versementsAvant);
+  const versementsApresValue = parseNumber(versementsApres);
+  const seuilVersements = 150000;
   
-  // Intérêts taxables après abattement (pour chaque période)
+  // Proportion des intérêts ap. sept 17 éligibles au taux 7,5%
+  // = Max(0, 150 000 - versements av. sept 17) / versements ap. sept 17
+  let proportionInteretsApres75 = 0;
+  if (versementsApresValue > 0) {
+    const partVersementsEligible75 = Math.max(0, seuilVersements - versementsAvantValue);
+    proportionInteretsApres75 = Math.min(1, partVersementsEligible75 / versementsApresValue);
+  }
+  
+  // Intérêts ap. sept 17 dans le rachat répartis selon le seuil
+  const interetsApres75 = partInteretsApresRachat * proportionInteretsApres75; // éligibles 7,5%
+  const interetsApres128 = partInteretsApresRachat * (1 - proportionInteretsApres75); // imposables 12,8%
+  
+  // Application de l'abattement en cascade:
+  // 1. Intérêts av. sept 17
+  // 2. Intérêts ap. sept 17 à 7,5%
+  // 3. Intérêts ap. sept 17 à 12,8%
+  const abattementSurAvant = Math.min(abattement, partInteretsAvantRachat);
+  const abattementRestant1 = abattement - abattementSurAvant;
+  const abattementSurApres75 = Math.min(abattementRestant1, interetsApres75);
+  const abattementRestant2 = abattementRestant1 - abattementSurApres75;
+  const abattementSurApres128 = Math.min(abattementRestant2, interetsApres128);
+  const abattementTotal = abattementSurAvant + abattementSurApres75 + abattementSurApres128;
+  
+  // Intérêts taxables après abattement (pour chaque catégorie)
   const interetsTaxablesAvant = Math.max(0, partInteretsAvantRachat - abattementSurAvant);
-  const interetsTaxablesApres = Math.max(0, partInteretsApresRachat - abattementSurApres);
-  const interetsTaxables = interetsTaxablesAvant + interetsTaxablesApres;
+  const interetsTaxablesApres75 = Math.max(0, interetsApres75 - abattementSurApres75);
+  const interetsTaxablesApres128 = Math.max(0, interetsApres128 - abattementSurApres128);
+  const interetsTaxables = interetsTaxablesAvant + interetsTaxablesApres75 + interetsTaxablesApres128;
   
   // TMI en pourcentage
   const tmiRate = parseNumber(tmi) / 100;
@@ -123,9 +147,10 @@ const ResultsPanel = ({
   const cehrRate = getCEHRRate(interetsTaxables);
   
   // Calcul PFU: intérêts av. sept 17 à 7,5% | intérêts ap. sept 17 à 12,8% | PS (17,2%) sur tous les intérêts
-  const impositionPFUAvant = interetsTaxablesAvant * 0.075; // 7,5%
-  const impositionPFUApres = interetsTaxablesApres * 0.128; // 12,8%
-  const impositionPFU = impositionPFUAvant + impositionPFUApres;
+  const impositionPFUAvant = interetsTaxablesAvant * 0.075; // 7,5% pour av. sept 17
+  const impositionPFUApres75 = interetsTaxablesApres75 * 0.075; // 7,5% pour ap. sept 17 ≤ 150k
+  const impositionPFUApres128 = interetsTaxablesApres128 * 0.128; // 12,8% pour ap. sept 17 > 150k
+  const impositionPFU = impositionPFUAvant + impositionPFUApres75 + impositionPFUApres128;
   const prelevementsSociauxPFU = partInteretsRachat * 0.172;
   const totalPFU = impositionPFU + prelevementsSociauxPFU + cehrPFU;
   const montantNetPFU = montant - totalPFU;
@@ -171,6 +196,8 @@ const ResultsPanel = ({
           {/* Détail intérêts av/ap sept 17 avec abattement */}
           <div className="bg-muted/30 rounded-lg p-3 space-y-2">
             <p className="text-xs font-medium text-muted-foreground">Répartition des intérêts du rachat</p>
+            
+            {/* Intérêts avant sept 17 */}
             <div className="flex justify-between items-center">
               <span className="text-xs text-muted-foreground">Intérêts av. sept 17</span>
               <span className="text-xs font-medium text-foreground">{formatNumber(partInteretsAvantRachat)} €</span>
@@ -181,16 +208,33 @@ const ResultsPanel = ({
                 <span className="text-xs font-medium text-foreground">- {formatNumber(abattementSurAvant)} €</span>
               </div>
             )}
+            
+            {/* Intérêts après sept 17 - part à 7,5% */}
             <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Intérêts ap. sept 17</span>
-              <span className="text-xs font-medium text-foreground">{formatNumber(partInteretsApresRachat)} €</span>
+              <span className="text-xs text-muted-foreground">Intérêts ap. sept 17 (7,5%)</span>
+              <span className="text-xs font-medium text-foreground">{formatNumber(interetsApres75)} €</span>
             </div>
-            {isContractOver8Years && abattementSurApres > 0 && (
+            {isContractOver8Years && abattementSurApres75 > 0 && (
               <div className="flex justify-between items-center pl-3">
                 <span className="text-xs text-muted-foreground">Abattement appliqué</span>
-                <span className="text-xs font-medium text-foreground">- {formatNumber(abattementSurApres)} €</span>
+                <span className="text-xs font-medium text-foreground">- {formatNumber(abattementSurApres75)} €</span>
               </div>
             )}
+            
+            {/* Intérêts après sept 17 - part à 12,8% */}
+            {interetsApres128 > 0 && (
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-muted-foreground">Intérêts ap. sept 17 (12,8%)</span>
+                <span className="text-xs font-medium text-foreground">{formatNumber(interetsApres128)} €</span>
+              </div>
+            )}
+            {isContractOver8Years && abattementSurApres128 > 0 && (
+              <div className="flex justify-between items-center pl-3">
+                <span className="text-xs text-muted-foreground">Abattement appliqué</span>
+                <span className="text-xs font-medium text-foreground">- {formatNumber(abattementSurApres128)} €</span>
+              </div>
+            )}
+            
             <div className="flex justify-between items-center pt-2 border-t border-border">
               <span className="text-xs font-medium text-foreground">Intérêts taxables</span>
               <span className="text-xs font-medium text-foreground">{formatNumber(interetsTaxables)} €</span>
@@ -218,10 +262,16 @@ const ResultsPanel = ({
                     <span className="text-foreground">{formatNumber(impositionPFUAvant)} €</span>
                   </div>
                 )}
-                {interetsTaxablesApres > 0 && (
+                {interetsTaxablesApres75 > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">IR ap. sept 17 (7,5%)</span>
+                    <span className="text-foreground">{formatNumber(impositionPFUApres75)} €</span>
+                  </div>
+                )}
+                {interetsTaxablesApres128 > 0 && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">IR ap. sept 17 (12,8%)</span>
-                    <span className="text-foreground">{formatNumber(impositionPFUApres)} €</span>
+                    <span className="text-foreground">{formatNumber(impositionPFUApres128)} €</span>
                   </div>
                 )}
                 <div className="flex justify-between">
