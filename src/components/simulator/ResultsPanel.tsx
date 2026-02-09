@@ -1,5 +1,26 @@
-import { X } from "lucide-react";
+import { X, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+const InfoTooltip = ({ text }: { text: string }) => (
+  <TooltipProvider delayDuration={200}>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-muted text-muted-foreground cursor-help">
+          <Info className="w-3 h-3" />
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-xs text-xs">
+        {text}
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+);
 
 interface ResultsPanelProps {
   isOpen: boolean;
@@ -181,7 +202,10 @@ const ResultsPanel = ({
       <div className="p-6 space-y-6">
         {/* Récapitulatif du rachat */}
         <div className="space-y-3">
-          <h4 className="text-sm font-medium text-foreground">Récapitulatif du rachat</h4>
+          <h4 className="text-sm font-medium text-foreground flex items-center gap-1">
+            Récapitulatif du rachat
+            <InfoTooltip text="Le rachat est décomposé en part de capital (non imposable) et part d'intérêts (imposable). La répartition est calculée au prorata : capital = montant racheté × (total versements / épargne totale)." />
+          </h4>
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-muted/50 rounded-lg p-3">
               <p className="text-xs text-muted-foreground mb-1">Part en capital</p>
@@ -196,7 +220,10 @@ const ResultsPanel = ({
           {/* Détail intérêts av/ap sept 17 avec abattement */}
           <div className="rounded-lg border border-border overflow-hidden">
             <div className="bg-muted px-3 py-2">
-              <p className="text-xs font-medium text-foreground">Répartition des intérêts du rachat</p>
+              <p className="text-xs font-medium text-foreground flex items-center gap-1">
+                Répartition des intérêts du rachat
+                <InfoTooltip text="Les intérêts sont répartis au prorata entre av. et ap. sept 2017. Au PFU, les intérêts av. sept 17 sont toujours à 7,5%. Pour ap. sept 17, si le total des versements dépasse 150 000 €, seule la part proportionnelle à Max(0, 150 000 - versements av.) / versements ap. bénéficie du taux de 7,5%, le reste étant taxé à 12,8%." />
+              </p>
             </div>
             
             <div className="divide-y divide-border">
@@ -257,7 +284,10 @@ const ResultsPanel = ({
 
         {/* Comparatif fiscal */}
         <div className="space-y-3">
-          <h4 className="text-sm font-medium text-foreground">Comparatif fiscal</h4>
+          <h4 className="text-sm font-medium text-foreground flex items-center gap-1">
+            Comparatif fiscal
+            <InfoTooltip text="Compare le Prélèvement Forfaitaire Unique (PFU) et le barème progressif de l'IR. Le PFU applique des taux fixes (7,5% ou 12,8%). Le barème applique votre TMI mais offre un avantage lié à la CSG déductible (6,8% × intérêts taxables × TMI). Les PS (17,2%) s'appliquent dans les deux cas sur l'intégralité des intérêts rachetés." />
+          </h4>
           
           <div className="grid grid-cols-2 gap-3">
             {/* PFU */}
@@ -288,11 +318,11 @@ const ResultsPanel = ({
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">PS (17,2%)</span>
+                  <span className="text-muted-foreground flex items-center gap-1">PS (17,2%) <InfoTooltip text="Prélèvements sociaux appliqués sur l'intégralité des intérêts rachetés (avant abattement)." /></span>
                   <span className="text-foreground">{formatNumber(prelevementsSociauxPFU)} €</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">CEHR ({cehrRate}%)</span>
+                  <span className="text-muted-foreground flex items-center gap-1">CEHR ({cehrRate}%) <InfoTooltip text="Contribution Exceptionnelle sur les Hauts Revenus. S'applique si revenu imposable + intérêts taxables dépasse les seuils selon le nombre de parts fiscales." /></span>
                   <span className="text-foreground">{formatNumber(cehrPFU)} €</span>
                 </div>
                 <div className="flex justify-between pt-2 border-t border-border">
@@ -320,16 +350,16 @@ const ResultsPanel = ({
                   <span className="text-foreground">{formatNumber(impositionBareme)} €</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">PS (17,2%)</span>
+                  <span className="text-muted-foreground flex items-center gap-1">PS (17,2%) <InfoTooltip text="Prélèvements sociaux appliqués sur l'intégralité des intérêts rachetés (avant abattement)." /></span>
                   <span className="text-foreground">{formatNumber(prelevementsSociauxBareme)} €</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">CEHR ({cehrRate}%)</span>
+                  <span className="text-muted-foreground flex items-center gap-1">CEHR ({cehrRate}%) <InfoTooltip text="Contribution Exceptionnelle sur les Hauts Revenus. S'applique si revenu imposable + intérêts taxables dépasse les seuils selon le nombre de parts fiscales." /></span>
                   <span className="text-foreground">{formatNumber(cehrBareme)} €</span>
                 </div>
                 {gainCsgDeductible > 0 && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">CSG déductible (6,8%)</span>
+                    <span className="text-muted-foreground flex items-center gap-1">CSG déductible (6,8%) <InfoTooltip text="Au barème progressif, 6,8% des intérêts taxables sont déductibles du revenu imposable, générant un gain fiscal de CSG déductible × TMI." /></span>
                     <span className="text-primary">- {formatNumber(gainCsgDeductible)} €</span>
                   </div>
                 )}

@@ -282,17 +282,19 @@ const LifeInsuranceSimulator = () => {
               <section>
                 <SectionTitle>Situation fiscale</SectionTitle>
                 <div className="space-y-1">
-                  <SimulatorInput
+                <SimulatorInput
                     label="Revenu imposable"
                     value={revenuImposable}
                     onChange={setRevenuImposable}
                     unit="€"
+                    infoText="Revenu net imposable du foyer fiscal (avant application du barème). Utilisé pour le calcul de la CEHR."
                   />
                   <SimulatorInput
                     label="Nombre de part(s) fiscale(s)"
                     value={nombreParts}
                     onChange={setNombreParts}
-                  formatThousands={false}
+                    formatThousands={false}
+                    infoText="Nombre de parts du quotient familial. Détermine les seuils de la CEHR : 250 000 € / 500 000 € pour 1 part, 500 000 € / 1 000 000 € pour 2 parts ou plus."
                   />
                   <SimulatorSelect
                     label="TMI"
@@ -305,6 +307,7 @@ const LifeInsuranceSimulator = () => {
                       { value: "41", label: "41%" },
                       { value: "45", label: "45%" },
                     ]}
+                    infoText="Tranche Marginale d'Imposition. Utilisée pour calculer l'IR au barème progressif et le gain lié à la CSG déductible (6,8% × intérêts taxables × TMI)."
                   />
                   <SimulatorInput
                     label="Abattement disponible"
@@ -318,8 +321,8 @@ const LifeInsuranceSimulator = () => {
                       }
                     }}
                     unit="€"
-                    info
                     disabled={!isContractOver8Years()}
+                    infoText="Abattement annuel sur les intérêts pour les contrats de plus de 8 ans (max 4 600 € pour une personne seule, 9 200 € pour un couple). S'impute en priorité sur les intérêts av. sept 17, puis ap. sept 17 à 7,5%, puis à 12,8%."
                   />
                 </div>
               </section>
