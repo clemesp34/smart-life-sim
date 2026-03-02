@@ -46,7 +46,7 @@ const EpargneConstitueeModal = ({
       <DialogTrigger asChild>
         <Button
           variant="ghost"
-          className="w-full justify-between h-10 px-3 text-sm font-normal hover:bg-muted/50"
+          className="w-full justify-between h-10 px-0 text-sm font-normal hover:bg-muted/50"
         >
           <span className="text-muted-foreground">Épargne constituée</span>
           <div className="flex items-center gap-2">
