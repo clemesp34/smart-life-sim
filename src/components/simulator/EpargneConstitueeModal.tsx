@@ -135,6 +135,12 @@ const EpargneConstitueeModal = ({
               </tr>
             </tbody>
           </table>
+
+          {/* Total épargne constituée */}
+          <div className="flex items-center justify-between mt-4 pt-3 border-t border-border px-2">
+            <span className="text-sm font-medium text-foreground">Épargne constituée</span>
+            <span className="text-sm font-semibold text-foreground">{totalEpargne} €</span>
+          </div>
           
           <div className="flex justify-end mt-4">
             <Button onClick={handleValidate} className="bg-primary text-primary-foreground">
