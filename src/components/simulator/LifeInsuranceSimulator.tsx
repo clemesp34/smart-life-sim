@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Calculator } from "lucide-react";
+import { Calculator, AlertTriangle } from "lucide-react";
 import SectionTitle from "./SectionTitle";
 import SimulatorInput from "./SimulatorInput";
 import SimulatorDateInput from "./SimulatorDateInput";
 import SimulatorSelect from "./SimulatorSelect";
 import EpargneConstitueeModal from "./EpargneConstitueeModal";
 import ResultsPanel from "./ResultsPanel";
+import { calculateTMI } from "@/lib/fiscalUtils";
 
 const LifeInsuranceSimulator = () => {
   const [showResults, setShowResults] = useState(false);
@@ -54,6 +55,18 @@ const LifeInsuranceSimulator = () => {
 
   const effectiveVersementsAvant = isContractBeforeSept2017() ? parseNumber(versementsAvant) : 0;
   const effectiveInteretsAvant = isContractBeforeSept2017() ? parseNumber(interetsAvant) : 0;
+
+  // Calcul automatique de la TMI à partir du barème IRPP
+  const calculatedTmi = useMemo(() => {
+    return calculateTMI(parseNumber(revenuImposable), parseNumber(nombreParts));
+  }, [revenuImposable, nombreParts]);
+
+  const userTmi = parseNumber(tmi);
+  const tmiMismatch = userTmi !== calculatedTmi;
+
+  const handleApplyCalculatedTmi = () => {
+    setTmi(String(calculatedTmi));
+  };
 
   const totalEpargne = formatNumber(
     effectiveVersementsAvant +
@@ -150,6 +163,20 @@ const LifeInsuranceSimulator = () => {
                 ]}
                 infoText="Tranche Marginale d'Imposition. Utilisée pour calculer l'IR au barème progressif et le gain lié à la CSG déductible (6,8% × intérêts taxables × TMI)."
               />
+              {tmiMismatch && (
+                <div className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-accent/50 border border-accent text-xs text-foreground">
+                  <AlertTriangle className="w-3.5 h-3.5 text-orange-500 shrink-0" />
+                  <span>
+                    TMI calculée : <strong>{calculatedTmi}%</strong> (revenu {revenuImposable} € / {nombreParts} part{parseNumber(nombreParts) > 1 ? 's' : ''}).
+                  </span>
+                  <button
+                    onClick={handleApplyCalculatedTmi}
+                    className="ml-auto underline text-primary hover:text-primary/80 whitespace-nowrap"
+                  >
+                    Appliquer
+                  </button>
+                </div>
+              )}
               <SimulatorInput
                 label="Abattement disponible"
                 value={abattementDisponible}

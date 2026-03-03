@@ -1,4 +1,5 @@
-import { X, Info } from "lucide-react";
+import { X, Info, AlertTriangle } from "lucide-react";
+import { calculateTMI } from "@/lib/fiscalUtils";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -190,6 +191,12 @@ const ResultsPanel = ({
   // Déterminer le meilleur régime
   const pfuIsBetter = totalPFU <= totalBareme;
 
+  // TMI calculée sur (revenu + intérêts taxables)
+  const tmiSansInterets = calculateTMI(revenu, parts);
+  const tmiAvecInterets = calculateTMI(revenu + interetsTaxables, parts);
+  const userTmiRate = parseNumber(tmi);
+  const tmiWarning = userTmiRate !== tmiAvecInterets;
+
   return (
     <div className="bg-card rounded-lg shadow-sm border border-border h-full">
       <div className="flex items-center justify-between p-4 border-b border-border">
@@ -288,6 +295,16 @@ const ResultsPanel = ({
             Comparatif fiscal
             <InfoTooltip text="Compare le Prélèvement Forfaitaire Unique (PFU) et le barème progressif de l'IR. Le PFU applique des taux fixes (7,5% ou 12,8%). Le barème applique votre TMI mais offre un avantage lié à la CSG déductible (6,8% × intérêts taxables × TMI). Les PS (17,2%) s'appliquent dans les deux cas sur l'intégralité des intérêts rachetés." />
           </h4>
+
+          {/* Warning TMI */}
+          {tmiWarning && interetsTaxables > 0 && (
+            <div className="flex items-start gap-2 px-3 py-2 rounded-md bg-orange-50 border border-orange-200 text-xs text-foreground dark:bg-orange-950/30 dark:border-orange-800">
+              <AlertTriangle className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
+              <span>
+                En intégrant les intérêts taxables ({formatNumber(interetsTaxables)} €) à votre revenu imposable, votre TMI passe à <strong>{tmiAvecInterets}%</strong> (contre {userTmiRate}% sélectionnée). Le barème progressif affiche la TMI que vous avez choisie — les résultats peuvent différer de la réalité.
+              </span>
+            </div>
+          )}
           
           <div className="grid grid-cols-2 gap-3">
             {/* PFU */}
