@@ -422,7 +422,7 @@ const ResultsPanel = ({
         <Button
           onClick={() => {
             const pdfData: SimulationData = {
-              dateOuverture: "N/A",
+              dateOuverture,
               versementsAvant: parseNumber(versementsAvant),
               versementsApres: parseNumber(versementsApres),
               interetsAvant: parseNumber(interetsAvant),
