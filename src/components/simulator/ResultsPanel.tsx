@@ -53,6 +53,7 @@ const ResultsPanel = ({
   tmi,
   revenuImposable,
   nombreParts,
+  dateOuverture,
 }: ResultsPanelProps) => {
   if (!isOpen) return null;
 
