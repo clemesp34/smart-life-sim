@@ -37,6 +37,7 @@ interface ResultsPanelProps {
   tmi: string;
   revenuImposable: string;
   nombreParts: string;
+  dateOuverture: string;
 }
 
 const ResultsPanel = ({
