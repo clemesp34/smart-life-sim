@@ -259,6 +259,7 @@ const LifeInsuranceSimulator = () => {
             tmi={tmi}
             revenuImposable={revenuImposable}
             nombreParts={nombreParts}
+            dateOuverture={dateOuverture}
           />
         </div>
       )}

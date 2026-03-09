@@ -1,5 +1,6 @@
-import { X, Info, AlertTriangle } from "lucide-react";
+import { X, Info, AlertTriangle, FileDown } from "lucide-react";
 import { calculateTMI } from "@/lib/fiscalUtils";
+import { generatePDF, type SimulationData } from "@/lib/pdfExport";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -36,6 +37,7 @@ interface ResultsPanelProps {
   tmi: string;
   revenuImposable: string;
   nombreParts: string;
+  dateOuverture: string;
 }
 
 const ResultsPanel = ({
@@ -51,6 +53,7 @@ const ResultsPanel = ({
   tmi,
   revenuImposable,
   nombreParts,
+  dateOuverture,
 }: ResultsPanelProps) => {
   if (!isOpen) return null;
 
@@ -414,6 +417,50 @@ const ResultsPanel = ({
             <span className="text-sm font-medium">{formatNumber(totalEpargne)} €</span>
           </div>
         </div>
+
+        {/* Bouton export PDF */}
+        <Button
+          onClick={() => {
+            const pdfData: SimulationData = {
+              dateOuverture,
+              versementsAvant: parseNumber(versementsAvant),
+              versementsApres: parseNumber(versementsApres),
+              interetsAvant: parseNumber(interetsAvant),
+              interetsApres: parseNumber(interetsApres),
+              totalEpargne,
+              revenuImposable: revenu,
+              nombreParts: parts,
+              tmi: parseNumber(tmi),
+              abattementDisponible: abattement,
+              isContractOver8Years,
+              montantRachete: montant,
+              partCapitalRachat,
+              partInteretsRachat,
+              interetsTaxables,
+              abattementTotal,
+              impositionPFU,
+              prelevementsSociauxPFU,
+              cehrPFU,
+              totalPFU,
+              montantNetPFU,
+              impositionBareme,
+              prelevementsSociauxBareme,
+              cehrBareme,
+              gainCsgDeductible,
+              totalBareme,
+              montantNetBareme,
+              pfuIsBetter,
+              economie: Math.abs(totalPFU - totalBareme),
+              cehrRate,
+            };
+            generatePDF(pdfData);
+          }}
+          className="w-full flex items-center justify-center gap-2"
+          variant="outline"
+        >
+          <FileDown className="w-4 h-4" />
+          Génération du livrable
+        </Button>
       </div>
     </div>
   );
