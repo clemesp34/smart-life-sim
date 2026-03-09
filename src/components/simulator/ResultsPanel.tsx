@@ -1,5 +1,6 @@
-import { X, Info, AlertTriangle } from "lucide-react";
+import { X, Info, AlertTriangle, FileDown } from "lucide-react";
 import { calculateTMI } from "@/lib/fiscalUtils";
+import { generatePDF, type SimulationData } from "@/lib/pdfExport";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
